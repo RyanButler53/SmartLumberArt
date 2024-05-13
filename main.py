@@ -14,33 +14,44 @@ textBoxes = [QLineEdit() for i in range(5)]
 # Buttons
 button = QPushButton('Generate Artwork!')
 
+def getWidth():
+    try:
+        return int(textBoxes[0].text())
+    except ValueError as error:
+        print("Invalid Input. Setting Width to 50")
+        return  50
+    
+def getHeight():
+    try:
+        return int(textBoxes[1].text())
+    except ValueError as error:
+        print("Invalid Input. Setting Height to 50")
+        return 50
+    
+def getNumImgs():
+    try:
+        return int(textBoxes[4].text())
+    except ValueError as error:
+        print("Invalid Input. Generating 1 image")
+        return 1
+def getSeed():
+    try:
+        seed = int(textBoxes[3].text())
+        return seed
+    except ValueError as error:
+        print("No seed given. Setting seed to 70")
+        return 0
+
+
 # Events functions take event as an argument. 
 def generate(event):
     """Generates the artwork"""
-    try:
-        width = int(textBoxes[0].text())
-    except ValueError as error:
-        print("Invalid Input. Setting Width to 50")
-        width = 50
-
-    try:
-        height = int(textBoxes[1].text())
-    except ValueError as error:
-        print("Invalid Input. Setting Height to 50")
-        height = 50
-
-    try:
-        numImgs = int(textBoxes[4].text())
-    except ValueError as error:
-        print("Invalid Input. Generating 1 image")
+    width = getWidth()
+    height = getHeight()
+    seed = getSeed()
+    numImgs = getNumImgs()
+    if seed:
         numImgs = 1
-
-    try:
-        seed = int(textBoxes[3].text())
-        numImgs = 1
-    except ValueError as error:
-        print("No seed given. Setting seed to 70")
-        seed = 0
         
     filename = textBoxes[2].text()
     filename = filename.rstrip(".png")
