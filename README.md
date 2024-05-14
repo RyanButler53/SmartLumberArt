@@ -12,6 +12,6 @@ Must have python3 and qtpy installed.
 Build: `make` to build from makefile
 
 Run:
-`python main.py`
+`python main.py` to launch the gui. 
 
 Highly recommend making an art directory called `art` to store art and adding `art/` in filename

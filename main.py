@@ -1,3 +1,5 @@
+# This is a bunch of Front end gui code
+# Not part of the lumber problem really
 from qtpy.QtWidgets import (QApplication, QLabel, 
                             QPushButton, QGridLayout,
                             QWidget,QLineEdit)
@@ -8,7 +10,6 @@ app = QApplication([])
 title = QLabel('Art Params')
 labels = ["Width", "Height", "Filename", "Seed", "Number of Images to Generate"]
 paramLabels = [QLabel(l) for l in labels ]
-
 textBoxes = [QLineEdit() for i in range(5)]
 
 # Buttons
@@ -34,6 +35,7 @@ def getNumImgs():
     except ValueError as error:
         print("Invalid Input. Generating 1 image")
         return 1
+    
 def getSeed():
     try:
         seed = int(textBoxes[3].text())
@@ -41,7 +43,6 @@ def getSeed():
     except ValueError as error:
         print("No seed given. Setting seed to 70")
         return 0
-
 
 # Events functions take event as an argument. 
 def generate(event):
@@ -63,9 +64,6 @@ def generate(event):
     else:
         for img in range(numImgs):
             subprocess.call(['./art-script.sh', filename+"."+str(img)+".png",str(seed), str(width), str(height)])
-
-    
-
 
 # Layout is NOT a widget. Needs  parent widget
 widget= QWidget()

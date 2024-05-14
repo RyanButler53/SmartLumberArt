@@ -1,4 +1,5 @@
-// Template for a matrix class. 
+// Template for a matrix class.
+// Very basic memory efficient matrix.  
 #include <vector>
 
 #ifndef MATRIX_HPP_INCLUDED
