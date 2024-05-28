@@ -31,6 +31,7 @@ for i,group in enumerate(grouped):
     
 
 ax.set_axis_off()
+plt.tight_layout()
 # print(filename)
 # plt.show()
 plt.savefig(filename)

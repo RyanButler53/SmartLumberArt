@@ -34,3 +34,6 @@ smart-lumber
 
 # Artwork
 *.png
+
+# Build files
+build/

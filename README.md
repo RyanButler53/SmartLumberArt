@@ -9,7 +9,8 @@ Visualizing the Smart Lumber problem
 Requirements: 
 Must have python3 and qtpy installed. 
 
-Build: `make` to build from makefile
+Build: `make` to build from makefile. If building from the makefile parallel table filling may not occur
+Alternatively build using cmake. 
 
 Run:
 `python main.py`
