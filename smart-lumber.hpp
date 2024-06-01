@@ -18,7 +18,6 @@ struct TableCell
 
     TableCell() = default;
     TableCell(size_t value, std::tuple<size_t, size_t> prev1, std::tuple<size_t, size_t> prev2, bool sell);
-    // Sell case: current cell location is prev1 and prev2.
 
 };
 
@@ -35,8 +34,8 @@ struct Cut
 Matrix<TableCell> smartLumber(size_t n, size_t m, Matrix<size_t>& prices, std::mt19937& rng);
 void  findPoints(Matrix<TableCell> &dpTable);
 
-void verticalCut(Matrix<TableCell> &dpTable, size_t row, size_t col, std::vector<TableCell> *tiedCells, size_t *maxValue); //, std::mutex& tie_lock);
-void horizontalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>* tiedCells, size_t* maxValue);//, std::mutex& tie_lock);
+void verticalCut(Matrix<TableCell> &dpTable, size_t row, size_t col, std::vector<TableCell>& tiedCells, size_t& maxValue, std::mutex& tie_mutex);
+void horizontalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>& tiedCells, size_t& maxValue, std::mutex& tie_mutex);
 
 
 std::ostream &operator<<(std::ostream &os, const TableCell &tc);

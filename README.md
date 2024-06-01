@@ -15,4 +15,6 @@ Alternatively build using cmake.
 Run:
 `python main.py`
 
+Color schemes are matplotlib color maps.
+
 Highly recommend making an art directory called `art` to store art and adding `art/` in filename

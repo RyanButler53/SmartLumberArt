@@ -1,15 +1,21 @@
 from qtpy.QtWidgets import (QApplication, QLabel, 
                             QPushButton, QGridLayout,
-                            QWidget,QLineEdit)
+                            QWidget,QLineEdit,QComboBox)
 import subprocess
 
+AVAILABLE_COLOR_MAPS = ['viridis', 'plasma', 'inferno', 'magma', 
+                        'cividis','spring', 'summer', 
+                        'autumn', 'winter', 'cool', 'Wistia']
 app = QApplication([])
 
 title = QLabel('Art Params')
-labels = ["Width", "Height", "Filename", "Seed", "Number of Images to Generate"]
-paramLabels = [QLabel(l) for l in labels ]
+labels = ["Width", "Height", "Filename", "Seed", "Number of Images to Generate","Color Scheme"]
+paramLabels = [QLabel(l) for l in labels]
 
 textBoxes = [QLineEdit() for i in range(5)]
+
+colorBox = QComboBox()
+colorBox.addItems(AVAILABLE_COLOR_MAPS)
 
 # Buttons
 button = QPushButton('Generate Artwork!')
@@ -39,9 +45,10 @@ def getSeed():
         seed = int(textBoxes[3].text())
         return seed
     except ValueError as error:
-        print("No seed given. Setting seed to 70")
         return 0
 
+def getColor():
+    return colorBox.currentText()
 
 # Events functions take event as an argument. 
 def generate(event):
@@ -50,6 +57,7 @@ def generate(event):
     height = getHeight()
     seed = getSeed()
     numImgs = getNumImgs()
+    colorScheme = getColor()
     if seed:
         numImgs = 1
         
@@ -59,12 +67,10 @@ def generate(event):
         filename = 'art'
     print(f"Generating {numImgs} images!")
     if numImgs== 1:
-        subprocess.call(['./art-script.sh', filename+".png", str(seed), str(width), str(height) ])
+        subprocess.call(['./art-script.sh', filename+".png", str(seed), str(width), str(height),colorScheme ])
     else:
         for img in range(numImgs):
-            subprocess.call(['./art-script.sh', filename+"."+str(img)+".png",str(seed), str(width), str(height)])
-
-    
+            subprocess.call(['./art-script.sh', filename+"."+str(img)+".png",str(seed), str(width), str(height), colorScheme])
 
 
 # Layout is NOT a widget. Needs  parent widget
@@ -75,9 +81,9 @@ for i, label in enumerate(paramLabels):
     layout.addWidget(label, i+1, 0)
 for i, textbox in enumerate(textBoxes):
     layout.addWidget(textbox,i+1, 2)
+layout.addWidget(colorBox,6,2) 
 
-
-layout.addWidget(button, 6, 1)
+layout.addWidget(button, 7, 1)
 widget.setLayout(layout)
 
 

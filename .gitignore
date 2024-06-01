@@ -37,3 +37,9 @@ smart-lumber
 
 # Build files
 build/
+
+# Pdfs
+*.pdf
+
+#vscode
+.vscode/

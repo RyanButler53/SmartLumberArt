@@ -3,8 +3,13 @@
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
+import matplotlib as mpl
 import numpy as np
 import random
+
+AVAILABLE_COLOR_MAPS = ['viridis', 'plasma', 'inferno', 'magma', 
+                        'cividis','spring', 'summer', 
+                        'autumn', 'winter', 'cool', 'Wistia']
 
 def plotSquare(x1,y1,x2,y2,c):
     """Plots a rectangle. x1 y1 and x2 y2 are diagonals. """
@@ -13,14 +18,19 @@ def plotSquare(x1,y1,x2,y2,c):
     return
 
 filename = sys.argv[1]
+cmap = sys.argv[2]
+if cmap not in AVAILABLE_COLOR_MAPS:
+    cmap = 'cool'
+
 inputStr = sys.stdin.read()
 split = inputStr.split()
 numSplits = len(split)//8
 fig,ax = plt.subplots(figsize=(10,10))
 grouped = [split[8*group:8*group+8] for group in range(numSplits)]
 
-# print(f"num cuts:{len(grouped)} ")
-colors = pl.cm.viridis(np.linspace(0, 1, len(grouped)))
+# Get Colors
+color_x =np.linspace(0.0, 1.0, len(grouped))
+colors = mpl.colormaps[cmap](color_x)
 
 ax = plt.gca()
 for i,group in enumerate(grouped):
@@ -32,8 +42,7 @@ for i,group in enumerate(grouped):
 
 ax.set_axis_off()
 plt.tight_layout()
-# print(filename)
-# plt.show()
+
 plt.savefig(filename)
 
 

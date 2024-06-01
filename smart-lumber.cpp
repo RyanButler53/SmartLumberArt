@@ -5,12 +5,15 @@
 #include <fstream>
 #include <vector>
 #include <chrono>
-#include <thread> // THREADING BRANCH
+#include <thread>
+#include <mutex>
 #include <random>
 #include <stack>
 #include "smart-lumber.hpp"
 
 using namespace std;
+using std::ref;
+
 
 // Constructor for the Table Cell class
 TableCell::TableCell(size_t value, tuple<size_t, size_t> prev1, tuple<size_t, size_t> prev2,bool sell):
@@ -63,16 +66,11 @@ Matrix<TableCell> smartLumber(size_t n, size_t m, Matrix<size_t>& prices, mt1993
                 maxValue = prices(row, col);
                 tiedCells.push_back(TableCell{maxValue, {row, col}, {row, col},true});
             }
-            // Horizontal and Vertical can be done in parallel since only reads
-            // Shared Variable: tiedCells, maxValue.
-
-            // thread vertical(verticalCut, dpTable, row, col, &tiedCells, &maxValue, tie_mutex);
-            // thread horizontal(horizontalCut, dpTable, row, col, &tiedCells, &maxValue, tie_mutex);
-
-            // vertical.join();
-            // horizontal.join();
-            verticalCut(dpTable, row, col, &tiedCells, &maxValue);
-            horizontalCut(dpTable, row, col, &tiedCells, &maxValue);
+            
+            // Do Horizontal and Vertical cuts in parallel. 
+            thread vertical(verticalCut, ref(dpTable), row, col, ref(tiedCells), ref(maxValue), ref(tie_mutex));
+            horizontalCut(dpTable, row, col, tiedCells, maxValue, tie_mutex);
+            vertical.join();
 
             size_t tiedCellCount = tiedCells.size();
             // Should never reach this case
@@ -86,34 +84,36 @@ Matrix<TableCell> smartLumber(size_t n, size_t m, Matrix<size_t>& prices, mt1993
     return dpTable; 
 }
 
-void verticalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>* tiedCells, size_t* maxValue /*,mutex& tie_mutex*/){
+void verticalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>& tiedCells, size_t& maxValue, std::mutex& tie_mutex){
     for (size_t vcut = 1; vcut < col; ++vcut)
     {
         size_t newValue = dpTable(row, vcut-1).value_ + dpTable(row, col - vcut).value_;
-        if (newValue > *maxValue){
-            // const lock_guard<std::mutex> foundTie(tie_mutex);
-            tiedCells->clear();
-            tiedCells->push_back(TableCell{newValue, {row, vcut - 1}, {row, col - vcut},false});
-            *maxValue = newValue;
+        if (newValue > maxValue){
+            const lock_guard<std::mutex> foundTie(tie_mutex);
+            tiedCells.clear();
+            tiedCells.push_back(TableCell{newValue, {row, vcut - 1}, {row, col - vcut},false});
+            maxValue = newValue;
         }
-        else if (newValue == *maxValue)
+        else if (newValue == maxValue)
         {
-            // const lock_guard<std::mutex> foundTie(tie_mutex);
-            tiedCells->push_back(TableCell{*maxValue, {row, vcut - 1}, {row, col - vcut}, false});
+            const lock_guard<std::mutex> foundTie(tie_mutex);
+            tiedCells.push_back(TableCell{maxValue, {row, vcut - 1}, {row, col - vcut}, false});
         }
     }
 }
 
-void horizontalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>* tiedCells,size_t* maxValue /*mutex& tie_mutex*/) {
+void horizontalCut(Matrix<TableCell>& dpTable, size_t row, size_t col, std::vector<TableCell>& tiedCells, size_t& maxValue, std::mutex& tie_mutex) {
     for (size_t hcut = 1; hcut < row; ++hcut)
     {
         size_t newValue = dpTable(hcut-1,col).value_ + dpTable(row - hcut,col).value_;
-        if (newValue > *maxValue){
-            tiedCells->clear();
-            tiedCells->push_back(TableCell{newValue,{hcut-1,col},{row - hcut,col},false});
-            *maxValue = newValue;
-        } else if (newValue == *maxValue){
-            tiedCells->push_back(TableCell{*maxValue, {hcut-1,col},{row - hcut,col},false});
+        if (newValue > maxValue){
+            const scoped_lock<std::mutex> foundTie(tie_mutex);
+            tiedCells.clear();
+            tiedCells.push_back(TableCell{newValue,{hcut-1,col},{row - hcut,col},false});
+            maxValue = newValue;
+        } else if (newValue == maxValue){
+            const scoped_lock<std::mutex> foundTie(tie_mutex);
+            tiedCells.push_back(TableCell{maxValue, {hcut-1,col},{row - hcut,col},false});
         }
     }
 }
@@ -190,7 +190,7 @@ int main(int argc, char** argv){
     std::mt19937 rng(seed);
     std::normal_distribution<double> distribution(4.0, 0.5);
 
-    // Table proportion is also random.  Between 1/3 and 1/2?
+    // Table proportion is 1/6
     size_t k = m / 6;
     size_t l = n / 6;
     Matrix<size_t> prices(k, l);
@@ -208,7 +208,6 @@ int main(int argc, char** argv){
         }
     }
     Matrix<TableCell> result = smartLumber(n, m, prices, rng);
-    // cerr << result << endl;
     findPoints(result);
     return 0;
 }
